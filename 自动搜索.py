@@ -16,7 +16,8 @@ def click_element(driver, element_by_xpath, timeout = 10):
         pass
 
 if __name__ == "__main__":
-    ### 定义标量
+    ### 定义常用变量
+    OUT_DIR = 'output'
     X = {'编号': 'SNOOPY', '国家': 'US'}
     ### 打开网页
     # https://stackoverflow.com/questions/55479056/headless-chrome-getting-blank-page-source
@@ -45,7 +46,7 @@ if __name__ == "__main__":
         ### 进行操作
         # 点击'FILTER BY'一侧
         print('1')
-        driver.save_screenshot("debug1.png")
+        driver.save_screenshot("%s/debug1-%d.png" % (OUT_DIR, test_cnts))
         click_element(driver, "//*[@id='source_filter']/div[1]/div/div[6]/div/a[60]/div[1]/label")
         click_element(driver, "//*[@id='ui-id-10']/span")
         click_element(driver, "//label[@for='ACT_check']")
@@ -53,19 +54,19 @@ if __name__ == "__main__":
         click_element(driver, "//*[@id='status_filter']/a/span")
         # 点击'SEARCH BY'一侧
         print('2')
-        driver.save_screenshot("debug2.png")
+        driver.save_screenshot("%s/debug2-%d.png" % (OUT_DIR, test_cnts))
         click_element(driver, "//*[@id='brand_search_line_0']/div[2]/ul/li/a/span[2]")
         click_element(driver, "//*[@id='brand_search_line_0']/div[2]/ul/li/ul/li[2]/a/div")
         WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.ID, "BRAND_input")))
         driver.find_element_by_id("BRAND_input").send_keys(X['编号'])
         time.sleep(5)  # 操作太快会有弹窗,一段时间后自动消失
         driver.find_element_by_id("BRAND_input").send_keys(Keys.ENTER)
-        time.sleep(10)
+        time.sleep(5)
         # 提取第一页内容
         print('3')
-        driver.save_screenshot("debug3.png")
+        driver.save_screenshot("%s/debug3-%d.png" % (OUT_DIR, test_cnts))
         results = []
-        WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, "//*[@id='0']/td[7]")))
+        WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.XPATH, "//*[@id='0']/td[7]")))
         for i in range(0, 30, 1):
             result = driver.find_element_by_xpath("//*[@id='%d']/td[7]" % i).get_attribute("title")
             results.append(result)
@@ -82,7 +83,7 @@ if __name__ == "__main__":
         # driver.set_window_size(1920, 3000)
         click_element(driver, "//*[@id='%d']/td[7]/em" % shot_index, timeout=10)
         WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.ID, "documentContent")))
-        driver.save_screenshot("%s-%s.png" % (X['编号'], time.strftime("%Y%m%d%H%M%S", time.localtime())))
+        driver.save_screenshot("%s/%s-%d.png" % (OUT_DIR, X['编号'], test_cnts))
 
         ### 进行下一次测试
         test_cnts = test_cnts + 1
