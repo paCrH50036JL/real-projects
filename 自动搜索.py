@@ -32,7 +32,7 @@ if __name__ == "__main__":
     # print(page_height, page_width)
     chrome_options.add_argument('--window-size=960,1500')
     # chrome_options.add_argument('--disable-gpu')
-    chrome_options.add_argument('--headless')
+    # chrome_options.add_argument('--headless')
     chrome_options.add_argument(ua)
     chrome_options.add_argument('--start-maximized')
     executable_path = r'C:\Program Files\Google\Chrome\Application\chromedriver.exe'
@@ -42,6 +42,7 @@ if __name__ == "__main__":
     test_cnts = 0
     while True:
         print('#####进行第%d次测试#####' % test_cnts)
+        start = time.time()
         driver.get("https://www3.wipo.int/branddb/en/#")
         ### 进行操作
         # 点击'FILTER BY'一侧
@@ -59,15 +60,25 @@ if __name__ == "__main__":
         click_element(driver, "//*[@id='brand_search_line_0']/div[2]/ul/li/ul/li[2]/a/div")
         WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.ID, "BRAND_input")))
         driver.find_element_by_id("BRAND_input").send_keys(X['编号'])
-        time.sleep(5)  # 操作太快会有弹窗,一段时间后自动消失
         driver.find_element_by_id("BRAND_input").send_keys(Keys.ENTER)
-        time.sleep(5)
-        # 提取第一页内容
+        # 点击太快网页会出现弹窗提示:Sorry, the page is busy processing another request,导致回车失败
+        xpath = "//*[@id='search_pane']/form/div[1]/div/div[1]/div[1]/div[2]/div[1]/div/h4"
+        while True:
+            try:
+                element = WebDriverWait(driver, 1).until(EC.visibility_of_element_located((By.XPATH, xpath)))
+                if element.text == "CURRENT SEARCH":  # 特别注意: 此处不是Current Search而是CURRENT SEARCH
+                    break
+            except:
+                try:
+                    WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.ID, "BRAND_input")))
+                    driver.find_element_by_id("BRAND_input").send_keys(Keys.ENTER)
+                except:
+                    pass
         print('3')
         driver.save_screenshot("%s/debug3-%d.png" % (OUT_DIR, test_cnts))
         results = []
-        WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.XPATH, "//*[@id='0']/td[7]")))
         for i in range(0, 30, 1):
+            WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.XPATH, "//*[@id='%d']/td[7]" % i)))
             result = driver.find_element_by_xpath("//*[@id='%d']/td[7]" % i).get_attribute("title")
             results.append(result)
         print(results)
@@ -81,11 +92,13 @@ if __name__ == "__main__":
         print(max(ranks), shot_index, type(shot_index))
         # 设置屏幕尺寸,并截取整个屏幕
         # driver.set_window_size(1920, 3000)
-        click_element(driver, "//*[@id='%d']/td[7]/em" % shot_index, timeout=10)
-        WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.ID, "documentContent")))
+        click_element(driver, "//*[@id='%d']/td[7]/em" % shot_index)
+        WebDriverWait(driver, 30).until(EC.visibility_of_element_located((By.ID, "documentContent")))
         driver.save_screenshot("%s/%s-%d.png" % (OUT_DIR, X['编号'], test_cnts))
 
         ### 进行下一次测试
+        end = time.time()
+        print('本次测试用时为%s' % (end - start))
         test_cnts = test_cnts + 1
         time.sleep(1)
 
