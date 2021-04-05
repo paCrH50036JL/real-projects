@@ -42,6 +42,36 @@ if __name__ == "__main__":
     executable_path = r'C:\Program Files\Google\Chrome\Application\chromedriver.exe'
     driver = webdriver.Chrome(executable_path=executable_path, options=chrome_options)
 
+    ### 获取点击位置
+    # 打开网页
+    driver.get("https://www3.wipo.int/branddb/en/#")
+    # 取得国家与点击位置对应关系
+    try:
+        element = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.ID, 'source_filter')))
+    except:
+        pass
+    contry_elements = []
+    for i in range(1, 70):
+        xpath = "//*[@id='source_filter']/div[1]/div/div[6]/div/a[%d]/div[1]/label" % i
+        element = driver.find_element_by_xpath(xpath).text
+        contry_element = [element, xpath]
+        contry_elements.append(contry_element)
+    # print(contry_elements)
+    # 取得点击位置
+    if ('WO' not in X['国家']):  # WO包含三个,需要单独处理
+        for i in range(1, 70):
+            if X['国家'] in contry_elements[i][0]:
+                contry_click = contry_elements[i][1]
+                break
+    else:
+        if X['国家'] == 'WO AO (LIS)':
+            contry_click = contry_elements[66][1]
+        if X['国家'] == 'WO TM':
+            contry_click = contry_elements[67][1]
+        if X['国家'] == 'WO 6TER':
+            contry_click = contry_elements[68][1]
+    print(contry_click)
+
     ### 获取数据
     test_cnts = 0
     while True:
