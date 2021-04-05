@@ -46,8 +46,9 @@ if __name__ == "__main__":
     test_cnts = 0
     while True:
         print('#####进行第%d次测试#####' % test_cnts)
-        start = time.time()
+        point1 = time.time()
         driver.get("https://www3.wipo.int/branddb/en/#")
+        point2 = time.time()
         ### 进行操作
         # 点击'FILTER BY'一侧
         print('1')
@@ -57,6 +58,7 @@ if __name__ == "__main__":
         click_element(driver, "//label[@for='ACT_check']")
         click_element(driver, "//label[@for='PEND_check']")
         click_element(driver, "//*[@id='status_filter']/a/span")
+        point3 = time.time()
         # 点击'SEARCH BY'一侧
         print('2')
         driver.save_screenshot("%s/debug2-%d.png" % (OUT_DIR, test_cnts))
@@ -78,6 +80,7 @@ if __name__ == "__main__":
                     driver.find_element_by_id("BRAND_input").send_keys(Keys.ENTER)
                 except:
                     pass
+        point4 = time.time()
         print('3')
         driver.save_screenshot("%s/debug3-%d.png" % (OUT_DIR, test_cnts))
         results = []
@@ -86,6 +89,7 @@ if __name__ == "__main__":
             result = driver.find_element_by_xpath("//*[@id='%d']/td[7]" % i).get_attribute("title")
             results.append(result)
         print(results)
+        point5 = time.time()
         # 判断匹配程度，并排名
         ranks = []
         for result in results:
@@ -99,10 +103,12 @@ if __name__ == "__main__":
         click_element(driver, "//*[@id='%d']/td[7]/em" % shot_index)
         WebDriverWait(driver, 50).until(EC.visibility_of_element_located((By.ID, "documentContent")))
         driver.save_screenshot("%s/%s-%d.png" % (OUT_DIR, X['编号'], test_cnts))
+        point6 = time.time()
 
         ### 进行下一次测试
-        end = time.time()
-        print('本次测试用时为%s' % (end - start))
+        print("打开网页用时:%s,自动操作浏览器用时%s" % ((point2 -point1), (point6 -point2)))
+        print('各阶段用时:%s-%s-%s-%s-%s' % ((point2 -point1), (point3 -point2),
+                        (point4 -point3), (point5 -point4), (point6 -point5)))
         test_cnts = test_cnts + 1
         time.sleep(1)
 
