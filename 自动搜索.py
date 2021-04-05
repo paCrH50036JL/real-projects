@@ -31,8 +31,12 @@ if __name__ == "__main__":
     # page_width = driver.execute_script('return document.documentElement.scrollWidth')
     # print(page_height, page_width)
     chrome_options.add_argument('--window-size=960,1500')
-    # chrome_options.add_argument('--disable-gpu')
-    # chrome_options.add_argument('--headless')
+    chrome_options.add_argument('--no-sandbox')
+    chrome_options.add_argument('--disable-gpu')
+    chrome_options.add_argument('--headless')
+    chrome_options.add_argument('--no-proxy-server')
+    chrome_options.add_argument("--proxy-server='direct://'")
+    chrome_options.add_argument("--proxy-bypass-list=*")
     chrome_options.add_argument(ua)
     chrome_options.add_argument('--start-maximized')
     executable_path = r'C:\Program Files\Google\Chrome\Application\chromedriver.exe'
@@ -78,7 +82,7 @@ if __name__ == "__main__":
         driver.save_screenshot("%s/debug3-%d.png" % (OUT_DIR, test_cnts))
         results = []
         for i in range(0, 30, 1):
-            WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.XPATH, "//*[@id='%d']/td[7]" % i)))
+            WebDriverWait(driver, 20).until(EC.visibility_of_element_located((By.XPATH, "//*[@id='%d']/td[7]" % i)))
             result = driver.find_element_by_xpath("//*[@id='%d']/td[7]" % i).get_attribute("title")
             results.append(result)
         print(results)
@@ -93,7 +97,7 @@ if __name__ == "__main__":
         # 设置屏幕尺寸,并截取整个屏幕
         # driver.set_window_size(1920, 3000)
         click_element(driver, "//*[@id='%d']/td[7]/em" % shot_index)
-        WebDriverWait(driver, 30).until(EC.visibility_of_element_located((By.ID, "documentContent")))
+        WebDriverWait(driver, 50).until(EC.visibility_of_element_located((By.ID, "documentContent")))
         driver.save_screenshot("%s/%s-%d.png" % (OUT_DIR, X['编号'], test_cnts))
 
         ### 进行下一次测试
