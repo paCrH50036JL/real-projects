@@ -18,7 +18,8 @@ def click_element(driver, element_by_xpath, timeout = 10):
 if __name__ == "__main__":
     ### 定义常用变量
     OUT_DIR = 'output'
-    X = {'编号': 'SNOOPY', '国家': 'US'}
+    XS = [{'编号': 'SPIVBGFD', '国家': 'US'}, {'编号': 'SNOOPY', '国家': 'US'},
+         {'编号': 'ABCD', '国家': 'DE'}, {'编号': 'NIKE', '国家': 'FR'}]
     ### 打开网页
     # https://stackoverflow.com/questions/55479056/headless-chrome-getting-blank-page-source
     # 无界面模式通过截图会看到返回空内容,推测被反爬虫过滤了
@@ -42,10 +43,10 @@ if __name__ == "__main__":
     executable_path = r'C:\Program Files\Google\Chrome\Application\chromedriver.exe'
     driver = webdriver.Chrome(executable_path=executable_path, options=chrome_options)
 
-    ### 获取点击位置
+    ### 取得国家与点击位置对应关系
     # 打开网页
     driver.get("https://www3.wipo.int/branddb/en/#")
-    # 取得国家与点击位置对应关系
+    # 取对应关系
     try:
         element = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.ID, 'source_filter')))
     except:
@@ -57,25 +58,26 @@ if __name__ == "__main__":
         contry_element = [element, xpath]
         contry_elements.append(contry_element)
     # print(contry_elements)
-    # 取得点击位置
-    if ('WO' not in X['国家']):  # WO包含三个,需要单独处理
-        for i in range(1, 70):
-            if X['国家'] in contry_elements[i][0]:
-                contry_click = contry_elements[i][1]
-                break
-    else:
-        if X['国家'] == 'WO AO (LIS)':
-            contry_click = contry_elements[66][1]
-        if X['国家'] == 'WO TM':
-            contry_click = contry_elements[67][1]
-        if X['国家'] == 'WO 6TER':
-            contry_click = contry_elements[68][1]
-    print(contry_click)
 
     ### 获取数据
     test_cnts = 0
-    while True:
-        print('#####进行第%d次测试#####' % test_cnts)
+    for X in XS:
+        # 取得点击位置
+        if ('WO' not in X['国家']):  # WO包含三个,需要单独处理
+            for i in range(1, 70):
+                if X['国家'] in contry_elements[i][0]:
+                    contry_click = contry_elements[i][1]
+                    break
+        else:
+            if X['国家'] == 'WO AO (LIS)':
+                contry_click = contry_elements[66][1]
+            if X['国家'] == 'WO TM':
+                contry_click = contry_elements[67][1]
+            if X['国家'] == 'WO 6TER':
+                contry_click = contry_elements[68][1]
+        print(contry_click)
+
+        print('#####进行第%d次测试,搜索信息%s#####' % (test_cnts, X))
         point1 = time.time()
         driver.get("https://www3.wipo.int/branddb/en/#")
         point2 = time.time()
@@ -110,12 +112,21 @@ if __name__ == "__main__":
                     driver.find_element_by_id("BRAND_input").send_keys(Keys.ENTER)
                 except:
                     pass
+        # 判断元素是否存在
+        try:
+            WebDriverWait(driver, 5).until(
+                EC.visibility_of_element_located((By.XPATH, "//*[@id='0']/td[7]")))
+        except:
+            print('不存在重复商标,继续搜索下一个')
+            test_cnts = test_cnts + 1
+            time.sleep(1)
+            continue
         point4 = time.time()
         print('3')
         driver.save_screenshot("%s/debug3-%d.png" % (OUT_DIR, test_cnts))
         results = []
         for i in range(0, 30, 1):
-            WebDriverWait(driver, 20).until(EC.visibility_of_element_located((By.XPATH, "//*[@id='%d']/td[7]" % i)))
+            WebDriverWait(driver, 5).until(EC.visibility_of_element_located((By.XPATH, "//*[@id='%d']/td[7]" % i)))
             result = driver.find_element_by_xpath("//*[@id='%d']/td[7]" % i).get_attribute("title")
             results.append(result)
         print(results)
@@ -141,4 +152,3 @@ if __name__ == "__main__":
                         (point4 -point3), (point5 -point4), (point6 -point5)))
         test_cnts = test_cnts + 1
         time.sleep(1)
-
